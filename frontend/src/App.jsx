@@ -6,8 +6,8 @@ import DoneFlow from './Doneflow'
 import RandomAlarm from './RandomAlarm'
 
 const STORAGE_KEY = 'minute_reminder_state_v3'
-const startingTasks = []
 
+const startingTasks = []
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60)
@@ -27,6 +27,7 @@ function loadSavedState() {
 function App() {
   const saved = loadSavedState()
 
+  // Calculate remaining seconds if they closed the tab mid-session
   const initialRemaining =
     saved?.isRunning && saved?.endTime
       ? Math.max(0, Math.ceil((saved.endTime - Date.now()) / 1000))
@@ -38,6 +39,7 @@ function App() {
   const [endTime, setEndTime] = useState(saved?.isRunning ? saved.endTime : null)
   const [secondsLeft, setSecondsLeft] = useState(initialRemaining)
   const [isRunning, setIsRunning] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
+  const [sessionOpen, setSessionOpen] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
   const [escapeAttempts, setEscapeAttempts] = useState(saved?.escapeAttempts ?? 0)
   const [reminderOpen, setReminderOpen] = useState(false)
   const [reminderMessage, setReminderMessage] = useState('')
@@ -51,6 +53,10 @@ function App() {
   const allTasksDone = tasks.length > 0 && completedCount === tasks.length
   const progress = minutes > 0 ? secondsLeft / (minutes * 60) : 0
 
+  // The random alarm keeps going until every task is done (even after time is up)
+  const alarmActive = sessionOpen && tasks.length > 0 && !allTasksDone
+
+  // Sync state to localStorage + tell extension if tab should be locked
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -64,7 +70,7 @@ function App() {
 }
   }, [tasks, minutes, isRunning, endTime, escapeAttempts])
 
-
+  // Detect tab close attempt to increment escape counter & show native browser warning
   useEffect(() => {
     if (!isRunning) return undefined
 
@@ -126,7 +132,6 @@ function App() {
     return () => window.clearInterval(intervalId)
   }, [isRunning, endTime])
 
-  
   function startTimer() {
     if (allTasksDone) {
       setTasks((current) => current.map((task) => ({ ...task, done: false })))
@@ -160,23 +165,25 @@ function App() {
   window.postMessage({ type: 'START_LOCK' }, '*')
 }
 
+    setSecondsLeft(durationSeconds)
+    setEndTime(targetEnd)
+    setEscapeAttempts(0)
+    setNotice('')
+    setIsRunning(true)
+    setSessionOpen(true)
+    window.postMessage({ type: 'START_LOCK' }, '*')
+  }
 
   function resetTimer() {
     setIsRunning(false)
+    setSessionOpen(false)
     setEndTime(null)
     setSecondsLeft(minutes * 60)
     setNotice('')
     window.postMessage({ type: 'END_LOCK' }, '*')
   }
 
-  function endSession() {
-    setIsRunning(false)
-    setEndTime(null)
-    setNotice('Session ended early. Coward.')
-    window.postMessage({ type: 'END_LOCK' }, '*')
-  }
-
-  // Called by DoneFlow after the user survives every "Are you sure?" round
+  // Called when the last task is completed during a running session
   function finishSession() {
     setIsRunning(false)
     setEndTime(null)
@@ -185,10 +192,10 @@ function App() {
   }
 
   function updateMinutes(value) {
-  const nextMinutes = Math.min(180, Math.max(0, Number(value) || 0))
-  setMinutes(nextMinutes)
-  if (!isRunning) setSecondsLeft(nextMinutes * 60)
-  } 
+    const nextMinutes = Math.min(180, Math.max(0, Number(value) || 0))
+    setMinutes(nextMinutes)
+    if (!isRunning) setSecondsLeft(nextMinutes * 60)
+  }
 
   function addTask(event) {
     event.preventDefault()
@@ -198,16 +205,20 @@ function App() {
     setTaskInput('')
   }
 
-  // Ticking a box now only ticks the box. Finishing happens through the Done button.
-  function toggleTask(id) {
+  // Tasks can only be completed through that task's Done button (DoneFlow)
+  function completeTask(id) {
+    const isLastTask = tasks.every((task) => task.id === id || task.done)
     setTasks((current) =>
-      current.map((task) => (task.id === id ? { ...task, done: !task.done } : task))
+      current.map((task) => (task.id === id ? { ...task, done: true } : task))
     )
+    if (isLastTask) setSessionOpen(false)
+    if (isLastTask && isRunning) finishSession()
   }
 
   return (
     <main className="workspace">
-      <RandomAlarm isRunning={isRunning} />
+      <RandomAlarm isRunning={alarmActive} />
+
       <header className="topbar">
         <a className="wordmark" href="#home" aria-label="Morrow home">
           <span className="brand-mark" aria-hidden="true">m</span>
@@ -260,7 +271,7 @@ function App() {
               <input
                 id="duration"
                 type="number"
-                min="1"
+                min="0"
                 max="180"
                 value={minutes}
                 disabled={isRunning}
@@ -280,7 +291,6 @@ function App() {
                 <button className="reset-button" type="button" onClick={resetTimer} aria-label="Reset timer" title="Reset timer">↺</button>
               </>
             ) : (
-              /* Remove or keep this button depending on whether you want a "ragequit" escape hatch */
               <button className="start-button" type="button" disabled title="Finish all tasks or wait for timer to unlock">
                 🔒 Locked until tasks done
               </button>
@@ -306,22 +316,20 @@ function App() {
 
           <div className="task-list">
             {tasks.map((task, index) => (
-              <label className={`task-row ${task.done ? 'is-done' : ''}`} key={task.id}>
-                <input
-                  type="checkbox"
-                  checked={task.done}
-                  onChange={() => toggleTask(task.id)}
-                  aria-label={`${task.done ? 'Mark incomplete' : 'Complete'}: ${task.title}`}
-                />
+              <div className={`task-row ${task.done ? 'is-done' : ''}`} key={task.id}>
+                <input type="checkbox" checked={task.done} disabled readOnly tabIndex={-1} aria-hidden="true" />
                 <span className="custom-check" aria-hidden="true">✓</span>
                 <span className="task-title">{task.title}</span>
+                <DoneFlow
+                  title={task.title}
+                  completed={task.done}
+                  onConfirmed={() => completeTask(task.id)}
+                />
                 <span className="task-index">0{index + 1}</span>
-              </label>
+              </div>
             ))}
             {tasks.length === 0 && <p className="empty-tasks">A clear page is a good place to start.</p>}
           </div>
-
-          <DoneFlow allDone={allTasksDone} onConfirmed={finishSession} />
 
           <form className="add-task-form" onSubmit={addTask}>
             <span aria-hidden="true">+</span>
@@ -338,7 +346,7 @@ function App() {
           </form>
 
           <div className="tasks-footer">
-            <span>{isRunning ? 'Check off every task to unlock this tab.' : 'Keep it small. Keep it kind.'}</span>
+            <span>{isRunning ? 'Finish every task to unlock this tab.' : 'Keep it small. Keep it kind.'}</span>
             <span className="task-lock" aria-label={isRunning ? 'Task editing locked' : 'Task editing unlocked'}>
               {isRunning ? '◉ LOCKED' : '◯ OPEN'}
             </span>
@@ -357,8 +365,6 @@ function App() {
         onAcknowledge={() => setReminderOpen(false)}
       />
     </main>
-
-    
   )
 }
 

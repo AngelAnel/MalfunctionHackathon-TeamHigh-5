@@ -63,17 +63,19 @@ function moveYes(layout, round) {
 }
 
 const styles = {
-  doneButton: (enabled) => ({
-    width: '100%',
-    marginTop: 20,
-    padding: '16px 0',
+    doneButton: {
+    flex: '0 0 auto',
+    padding: '7px 14px',
     border: 'none',
-    background: enabled ? '#c81e2b' : '#9a9a9a',
+    borderRadius: 3,
+    background: 'var(--teal, #c91f2d)',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 600,
-    cursor: enabled ? 'pointer' : 'not-allowed',
-  }),
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+  },
   overlay: {
     position: 'fixed',
     top: 0,
@@ -162,7 +164,7 @@ const styles = {
   },
 }
 
-export default function DoneFlow({ allDone, onConfirmed }) {
+export default function DoneFlow({ title, completed, onConfirmed }) {
   // stage: 'idle' | 'confirm' | 'congrats'
   const [stage, setStage] = useState('idle')
   const [round, setRound] = useState(0)
@@ -242,15 +244,11 @@ export default function DoneFlow({ allDone, onConfirmed }) {
 
   return (
     <>
-      <button
-        type="button"
-        style={styles.doneButton(allDone)}
-        onClick={openConfirm}
-        disabled={!allDone}
-        title={allDone ? '' : 'Finish all tasks first'}
-      >
-        Done?
-      </button>
+        {!completed && (
+        <button type="button" style={styles.doneButton} onClick={openConfirm}>
+          Done?
+        </button>
+        )}
 
       {stage === 'confirm' &&
         createPortal(
@@ -301,18 +299,18 @@ export default function DoneFlow({ allDone, onConfirmed }) {
           document.body
         )}
 
-      {stage === 'congrats' &&
+        {stage === 'congrats' &&
         createPortal(
-          <div style={styles.overlay} role="dialog" aria-modal="true">
+            <div style={styles.overlay} role="dialog" aria-modal="true">
             <div style={{ ...styles.modal, ...styles.congrats }}>
-              <h2>Congratulations!</h2>
-              <p>You finished everything on your list. You are free to go.</p>
-              <button type="button" style={styles.close} onClick={() => setStage('idle')}>
+                <h2>Congratulations!</h2>
+                <p>You finished: {title}</p>
+                <button type="button" style={styles.close} onClick={() => setStage('idle')}>
                 Close
-              </button>
+                </button>
             </div>
-          </div>,
-          document.body
+            </div>,
+            document.body
         )}
     </>
   )
