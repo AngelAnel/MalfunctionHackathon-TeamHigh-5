@@ -43,6 +43,7 @@ function App() {
     saved?.isRunning && !savedTasksAreDone ? saved.endTime : null
   )
   const [secondsLeft, setSecondsLeft] = useState(initialRemaining)
+  const [showResults, setShowResults] = useState(false)
   const [sessionOpen, setSessionOpen] = useState(
     Boolean(saved?.isRunning && initialRemaining > 0 && !savedTasksAreDone)
   )
@@ -108,7 +109,10 @@ function App() {
       if (remaining <= 0) {
         activeMinuteMsg = ''
         setIsRunning(false)
+        setSessionOpen(false)
         setEndTime(null)
+        setTasks([])
+        setShowResults(false)
         setNotice('Time is up. You failed to finish in time.')
         return
       }
@@ -165,6 +169,7 @@ function App() {
     setNotice('')
     setIsRunning(true)
     setSessionOpen(true)
+    setShowResults(false)
   }
 
   function resetTimer() {
@@ -193,7 +198,7 @@ function App() {
   }
 
   function startAnotherRound() {
-    setTasks((current) => current.map((task) => ({ ...task, done: false })))
+    setShowResults(false)
     setNotice('')
   }
 
@@ -214,11 +219,17 @@ function App() {
   // Tasks can only be completed through that task's Done button (DoneFlow)
   function completeTask(id) {
     const isLastTask = tasks.every((task) => task.id === id || task.done)
-    setTasks((current) =>
-      current.map((task) => (task.id === id ? { ...task, done: true } : task))
-    )
-    if (isLastTask) setSessionOpen(false)
-    if (isLastTask && isRunning) finishSession()
+    if (isLastTask) {
+      setTasks([])
+      setSessionOpen(false)
+      setShowResults(true)
+      if (isRunning) finishSession()
+      return
+    }
+
+    setTasks((current) => current.map((task) =>
+      task.id === id ? { ...task, done: true } : task,
+    ))
   }
 
   // Runs when the Congratulations popup is closed: if everything is done, clear the list
@@ -378,7 +389,7 @@ function App() {
         message={reminderMessage}
         onAcknowledge={() => setReminderOpen(false)}
       />
-      {allTasksDone && <ResultScreen onClose={startAnotherRound} />}
+      {showResults && <ResultScreen onClose={startAnotherRound} />}
     </main>
   )
 }
