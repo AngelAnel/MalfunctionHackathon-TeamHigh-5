@@ -11,6 +11,28 @@
   flex-direction: column;
 }
 
+::selection {
+  background: rgba(201, 31, 45, 0.18);
+}
+
+/* ---------- animations ---------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(190, 61, 20, 0.15); }
+  50%      { box-shadow: 0 0 0 7px rgba(190, 61, 20, 0.05); }
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.7); }
+  60%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- top bar ---------- */
 .topbar {
   height: 78px;
   flex: 0 0 78px;
@@ -63,6 +85,7 @@
   background: #91b9a2;
 }
 
+/* ---------- layout ---------- */
 .dashboard {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 0.88fr);
@@ -77,6 +100,7 @@
 .intro {
   align-self: end;
   padding-bottom: 7px;
+  animation: rise 0.55s ease backwards;
 }
 
 .eyebrow,
@@ -127,13 +151,16 @@
   line-height: 1.7;
 }
 
+/* ---------- panels ---------- */
 .timer-panel,
 .tasks-panel {
   position: relative;
-  border: 1px solid #dfe9e7;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.83);
-  box-shadow: 0 12px 35px rgba(37, 71, 66, 0.045);
+  border: 1px solid #f1d9d9;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 1px 2px rgba(120, 30, 40, 0.05),
+    0 22px 44px -18px rgba(120, 30, 40, 0.16);
 }
 
 .timer-panel {
@@ -143,11 +170,14 @@
   flex-direction: column;
   align-items: center;
   padding: 21px 26px 17px;
+  animation: rise 0.55s 0.08s ease backwards;
 }
 
-.timer-panel.is-running {
-  border-color: #d6dfdc;
-  background: #e8edeb;
+.timer-panel.is-running,
+.tasks-panel.is-running {
+  border-color: #d9d3d2;
+  background: #ece9e8;
+  box-shadow: none;
 }
 
 .timer-panel.is-running .timer-heading,
@@ -179,9 +209,10 @@
 
 .session-state.is-live .state-dot {
   background: var(--coral);
-  box-shadow: 0 0 0 3px rgba(218, 118, 95, 0.13);
+  animation: livePulse 1.6s infinite;
 }
 
+/* ---------- clock ---------- */
 .clock-wrap {
   position: relative;
   width: min(240px, 64vw);
@@ -198,11 +229,11 @@
 .clock-track,
 .clock-arc {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 3;
 }
 
 .clock-track {
-  stroke: #e8efed;
+  stroke: #f3e3e3;
 }
 
 .clock-arc {
@@ -210,6 +241,7 @@
   stroke-linecap: round;
   stroke-dasharray: 684.86;
   transition: stroke-dashoffset 0.5s linear;
+  filter: drop-shadow(0 0 5px rgba(201, 31, 45, 0.3));
 }
 
 .clock-face {
@@ -221,6 +253,7 @@
   justify-content: center;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #ffffff 0, #f8fbfa 68%, #f2f7f5 100%);
+  box-shadow: inset 0 2px 14px rgba(120, 30, 40, 0.05);
 }
 
 .clock-caption {
@@ -236,6 +269,7 @@
   font-family: var(--display);
   font-size: clamp(48px, 6vw, 61px);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
   line-height: 1.2;
 }
 
@@ -244,6 +278,7 @@
   font-size: 11px;
 }
 
+/* ---------- session length ---------- */
 .duration-control {
   display: flex;
   align-items: center;
@@ -286,6 +321,7 @@
   appearance: none;
 }
 
+/* ---------- timer buttons ---------- */
 .timer-actions {
   width: min(280px, 100%);
   display: flex;
@@ -296,9 +332,9 @@
 .reset-button {
   min-height: 45px;
   border: 0;
-  border-radius: 3px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 160ms ease, transform 160ms ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .start-button {
@@ -307,18 +343,26 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--teal);
+  background: linear-gradient(180deg, #d42b39, #b81a28);
+  box-shadow: 0 8px 18px -8px rgba(201, 31, 45, 0.7);
   color: white;
-  font: 600 13px var(--sans);
+  font: 700 13px var(--sans);
+  letter-spacing: 0.02em;
 }
 
-.start-button:hover {
-  background: #105f54;
-  transform: translateY(-1px);
+.start-button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #dc3341, #c01f2d);
+  box-shadow: 0 12px 22px -8px rgba(201, 31, 45, 0.75);
+  transform: translateY(-2px);
+}
+
+.start-button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .start-button:disabled {
-  background: #8daba4;
+  background: #b9b3b3;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -333,15 +377,17 @@
 
 .reset-button {
   width: 47px;
-  background: #edf4f2;
-  color: #74494e;
+  background: #fbeeee;
+  color: #a3333d;
   font-size: 23px;
 }
 
 .reset-button:hover {
-  background: #e3eeeb;
+  background: #f6dede;
+  transform: rotate(-30deg);
 }
 
+/* ---------- notice ---------- */
 .notice {
   width: min(280px, 100%);
   display: flex;
@@ -351,7 +397,8 @@
   margin-top: 10px;
   padding: 9px 10px;
   border-left: 2px solid var(--coral);
-  background: #fff5f1;
+  border-radius: 8px;
+  background: #fff3ef;
   color: #6c3e36;
   font-size: 11px;
   text-align: left;
@@ -366,6 +413,13 @@
   font-size: 17px;
 }
 
+.timer-footnote {
+  margin: 9px 0 0;
+  color: #8d7b7d;
+  font-size: 10px;
+}
+
+/* ---------- reminder dialog (kept from your original) ---------- */
 .reminder-dialog {
   width: min(440px, calc(100vw - 32px));
   max-width: none;
@@ -432,22 +486,7 @@
   outline-offset: 3px;
 }
 
-@media (max-width: 480px) {
-  .reminder-dialog-content {
-    padding: 26px 22px;
-  }
-
-  .reminder-dialog h2 {
-    font-size: 30px;
-  }
-}
-
-.timer-footnote {
-  margin: 9px 0 0;
-  color: #8d7b7d;
-  font-size: 10px;
-}
-
+/* ---------- tasks panel ---------- */
 .tasks-panel {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -456,11 +495,7 @@
   flex-direction: column;
   margin-top: 0;
   padding: 25px 26px 19px;
-}
-
-.tasks-panel.is-running {
-  border-color: #d6dfdc;
-  background: #e8edeb;
+  animation: rise 0.55s 0.16s ease backwards;
 }
 
 .tasks-panel.is-running .tasks-heading,
@@ -507,12 +542,23 @@
 
 .task-row {
   position: relative;
-  min-height: 61px;
+  min-height: 58px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #e8efed;
-  cursor: pointer;
+  padding: 0 8px;
+  border-bottom: 1px solid #f4e4e4;
+  border-radius: 10px;
+  cursor: default;
+  transition: background 0.15s ease;
+}
+
+.task-row:hover {
+  background: rgba(201, 31, 45, 0.04);
+}
+
+.task-row.is-done {
+  opacity: 0.7;
 }
 
 .task-row input {
@@ -521,31 +567,27 @@
   height: 22px;
   margin: 0;
   opacity: 0;
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .custom-check {
-  width: 19px;
-  height: 19px;
+  width: 22px;
+  height: 22px;
   display: grid;
-  flex: 0 0 19px;
+  flex: 0 0 22px;
   place-items: center;
-  border: 1px solid #bdceca;
+  border: 1.5px solid #d9b9bc;
   border-radius: 50%;
   color: transparent;
-  font-size: 11px;
+  font-size: 12px;
   transition: background-color 140ms ease, border-color 140ms ease;
-}
-
-.task-row input:focus-visible + .custom-check {
-  outline: 2px solid var(--coral);
-  outline-offset: 3px;
 }
 
 .task-row input:checked + .custom-check {
   border-color: var(--teal);
   background: var(--teal);
   color: white;
+  animation: pop 0.3s ease;
 }
 
 .task-title {
@@ -553,7 +595,8 @@
   min-width: 0;
   overflow-wrap: anywhere;
   color: #463236;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1.45;
 }
 
@@ -572,14 +615,26 @@
 
 .task-row button {
   white-space: nowrap;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.task-row button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 12px -6px rgba(201, 31, 45, 0.6);
 }
 
 .empty-tasks {
-  padding: 24px 0;
+  margin: 18px 0;
+  padding: 28px 16px;
+  border: 1.5px dashed #ecc9cc;
+  border-radius: 12px;
   color: #80696d;
   font-size: 13px;
+  text-align: center;
 }
 
+/* ---------- add task ---------- */
 .add-task-form {
   display: flex;
   align-items: center;
@@ -588,13 +643,14 @@
   margin-top: 14px;
   padding: 0 6px 0 14px;
   border: 1.5px solid var(--teal);
-  border-radius: 3px;
+  border-radius: 12px;
   background: #fff;
   color: var(--teal);
+  transition: box-shadow 0.15s ease;
 }
 
 .add-task-form:focus-within {
-  box-shadow: 0 0 0 3px rgba(201, 31, 45, 0.15);
+  box-shadow: 0 0 0 4px rgba(201, 31, 45, 0.12);
 }
 
 .add-task-form > span {
@@ -623,7 +679,7 @@
   margin: 6px 0;
   padding: 0 18px;
   border: 0;
-  border-radius: 3px;
+  border-radius: 9px;
   background: var(--teal);
   color: #fff;
   cursor: pointer;
@@ -633,17 +689,19 @@
 }
 
 .add-task-form button:disabled {
-  background: #e3c6c9;
+  background: #ecd3d5;
   color: #fff;
   cursor: not-allowed;
 }
 
+/* ---------- footers ---------- */
 .tasks-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-top: 20px;
+  padding-top: 4px;
   color: #8d7b7d;
   font-size: 10px;
 }
@@ -653,7 +711,7 @@
   color: var(--teal);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
 }
 
 .page-footer {
@@ -678,6 +736,7 @@ input:focus-visible {
   outline-offset: 3px;
 }
 
+/* ---------- responsive ---------- */
 @media (min-width: 1000px) and (min-height: 800px) {
   .dashboard {
     align-content: center;
@@ -741,57 +800,22 @@ input:focus-visible {
   }
 }
 
+@media (max-width: 480px) {
+  .reminder-dialog-content {
+    padding: 26px 22px;
+  }
+
+  .reminder-dialog h2 {
+    font-size: 30px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
+    animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-.tasks-panel .add-task-form {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 10px 14px;
-  background: #fff;
-  border: 2px solid #c81e2b;
-}
-.tasks-panel .add-task-form:focus-within {
-  box-shadow: 0 0 0 3px rgba(200, 30, 43, 0.18);
-}
-.tasks-panel .add-task-form > span {
-  color: #c81e2b;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1;
-}
-.tasks-panel .add-task-form input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: #1a1112;
-  font-size: 16px;
-  font-weight: 500;
-}
-.tasks-panel .add-task-form input::placeholder {
-  color: #5c4a4c;
-  opacity: 1;
-}
-.tasks-panel .add-task-form button {
-  padding: 9px 20px;
-  border: none;
-  background: #c81e2b;
-  color: #fff;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.tasks-panel .add-task-form button:disabled {
-  background: #d9b3b6;
-  cursor: not-allowed;
 }
