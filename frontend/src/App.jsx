@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { startLock, endLock } from './utils/extensionBridge.js'
+import ReminderModal from './components/ReminderModal.jsx'
 import DoneFlow from './Doneflow'
 import RandomAlarm from './RandomAlarm'
 
@@ -39,6 +41,8 @@ function App() {
   const [isRunning, setIsRunning] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
   const [sessionOpen, setSessionOpen] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
   const [escapeAttempts, setEscapeAttempts] = useState(saved?.escapeAttempts ?? 0)
+  const [reminderOpen, setReminderOpen] = useState(false)
+  const [reminderMessage, setReminderMessage] = useState('')
   const [notice, setNotice] = useState(
     saved?.isRunning && initialRemaining > 0
       ? 'Nice try closing the tab. Get back to work.'
@@ -59,11 +63,11 @@ function App() {
       JSON.stringify({ tasks, minutes, isRunning, endTime, escapeAttempts })
     )
 
-    if (isRunning) {
-      window.postMessage({ type: 'START_LOCK' }, '*')
+    if (isRunning && endTime) {
+    startLock({ startTime: endTime - minutes * 60 * 1000, endTime })
     } else {
-      window.postMessage({ type: 'END_LOCK' }, '*')
-    }
+    endLock()
+}
   }, [tasks, minutes, isRunning, endTime, escapeAttempts])
 
   // Detect tab close attempt to increment escape counter & show native browser warning
@@ -84,10 +88,13 @@ function App() {
   useEffect(() => {
     if (!isRunning || !endTime) return undefined
 
-    let activeMinuteMsg = ''
+    let lastMinuteBucket = Math.ceil(Math.max(0, endTime - Date.now()) / 60_000)
+    let activeMinuteMsg = `${lastMinuteBucket} minute${lastMinuteBucket === 1 ? '' : 's'} left. Stop stalling.`
+    let nextNotificationAt = Date.now() + 10_000
 
     const intervalId = window.setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
+      const now = Date.now()
+      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000))
       setSecondsLeft(remaining)
 
       if (remaining <= 0) {
@@ -99,15 +106,16 @@ function App() {
         return
       }
 
-      // Start a new minute's message at each full-minute mark (except the initial start time)
-      if (remaining % 60 === 0 && remaining !== minutes * 60) {
-        const minsLeft = remaining / 60
-        activeMinuteMsg = `${minsLeft} minute${minsLeft === 1 ? '' : 's'} left. Stop stalling.`
+      const minuteBucket = Math.ceil(remaining / 60)
+      if (minuteBucket < lastMinuteBucket) {
+        lastMinuteBucket = minuteBucket
+        activeMinuteMsg = `${minuteBucket} minute${minuteBucket === 1 ? '' : 's'} left. Stop stalling.`
         setNotice(activeMinuteMsg)
       }
 
-      // Once a minute alert has started, repeat the same message every 10 seconds
-      if (activeMinuteMsg && remaining % 10 === 0) {
+      if (now >= nextNotificationAt) {
+        setReminderMessage(activeMinuteMsg)
+        setReminderOpen(true)
         window.postMessage(
           {
             type: 'SHOW_NOTIFICATION',
@@ -116,28 +124,46 @@ function App() {
           },
           '*'
         )
+        const intervalsElapsed = Math.floor((now - nextNotificationAt) / 10_000)
+        nextNotificationAt += (intervalsElapsed + 1) * 10_000
       }
     }, 1000)
 
     return () => window.clearInterval(intervalId)
-  }, [isRunning, endTime, minutes])
+  }, [isRunning, endTime])
 
   function startTimer() {
-    if (minutes <= 0) {
-      setNotice('Set a session length first.')
-      return
-    }
-    if (tasks.length === 0) {
-      setNotice('Add at least one task before you start the timer.')
-      return
-    }
-
     if (allTasksDone) {
       setTasks((current) => current.map((task) => ({ ...task, done: false })))
     }
 
     const durationSeconds = minutes * 60
     const targetEnd = Date.now() + durationSeconds * 1000
+
+    setSecondsLeft(durationSeconds)
+    setEndTime(targetEnd)
+    setEscapeAttempts(0)
+    setReminderOpen(false)
+    setReminderMessage('')
+    setNotice('')
+    setIsRunning(true)
+    window.postMessage({ type: 'START_LOCK' }, '*')
+  if (tasks.length === 0) {
+    setNotice('Add at least one task before you start the timer.')
+    return
+  }
+
+  if (allTasksDone) {
+    setTasks((current) => current.map((task) => ({ ...task, done: false })))
+  }
+
+  setSecondsLeft(durationSeconds)
+  setEndTime(targetEnd)
+  setEscapeAttempts(0)
+  setNotice('')
+  setIsRunning(true)
+  window.postMessage({ type: 'START_LOCK' }, '*')
+}
 
     setSecondsLeft(durationSeconds)
     setEndTime(targetEnd)
@@ -277,7 +303,6 @@ function App() {
               <button type="button" aria-label="Dismiss reminder" onClick={() => setNotice('')}>×</button>
             </div>
           )}
-          <p className="timer-footnote">A reminder will pop up every minute until you finish.</p>
         </section>
 
         <section className={`tasks-panel ${isRunning ? 'is-running' : ''}`} aria-label="Your task list">
@@ -333,6 +358,12 @@ function App() {
         <span>MADE FOR THE MOMENT YOU’RE IN</span>
         <span>TAKE IT ONE THING AT A TIME <span className="footer-spark">✳</span></span>
       </footer>
+
+      <ReminderModal
+        open={isRunning && reminderOpen}
+        message={reminderMessage}
+        onAcknowledge={() => setReminderOpen(false)}
+      />
     </main>
   )
 }
