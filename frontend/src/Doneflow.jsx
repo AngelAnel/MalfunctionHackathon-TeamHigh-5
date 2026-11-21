@@ -153,19 +153,10 @@ const styles = {
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'top 0.12s, left 0.12s',
   }),
-  congrats: { height: 'auto', textAlign: 'center', padding: '32px 24px' },
-  close: {
-    marginTop: 12,
-    padding: '10px 28px',
-    border: 'none',
-    background: '#c81e2b',
-    color: '#fff',
-    cursor: 'pointer',
-  },
 }
 
 export default function DoneFlow({ title, completed, onConfirmed }) {
-  // stage: 'idle' | 'confirm' | 'congrats'
+  // stage: 'idle' | 'confirm'
   const [stage, setStage] = useState('idle')
   const [round, setRound] = useState(0)
   const [totalRounds, setTotalRounds] = useState(MIN_ROUNDS)
@@ -220,7 +211,7 @@ export default function DoneFlow({ title, completed, onConfirmed }) {
     setNotice('')
     if (round + 1 >= totalRounds) {
       onConfirmed()
-      setStage('congrats')
+      setStage('idle')
     } else {
       startRound(round + 1)
     }
@@ -299,6 +290,7 @@ export default function DoneFlow({ title, completed, onConfirmed }) {
           document.body
         )}
 
+<<<<<<< HEAD
       {stage === 'congrats' &&
         createPortal(
           <div style={styles.overlay} role="dialog" aria-modal="true">
@@ -312,6 +304,8 @@ export default function DoneFlow({ title, completed, onConfirmed }) {
           </div>,
           document.body
         )}
+=======
+>>>>>>> 2da278dc9aa6530a2d297cba20f59437e025a96f
     </>
   )
 }
