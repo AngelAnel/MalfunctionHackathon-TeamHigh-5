@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import DoneFlow from './Doneflow'
 
 const STORAGE_KEY = 'minute_reminder_state_v1'
 
@@ -150,6 +151,14 @@ function App() {
     window.postMessage({ type: 'END_LOCK' }, '*')
   }
 
+  // Called by DoneFlow after the user survives every "Are you sure?" round
+  function finishSession() {
+    setIsRunning(false)
+    setEndTime(null)
+    setNotice('All tasks complete. You are finally free to leave.')
+    window.postMessage({ type: 'END_LOCK' }, '*')
+  }
+
   function updateMinutes(value) {
     const nextMinutes = Math.min(180, Math.max(1, Number(value) || 1))
     setMinutes(nextMinutes)
@@ -164,17 +173,11 @@ function App() {
     setTaskInput('')
   }
 
+  // Ticking a box now only ticks the box. Finishing happens through the Done button.
   function toggleTask(id) {
-    const completingLastTask = isRunning && tasks.every((task) => task.id === id || task.done)
     setTasks((current) =>
       current.map((task) => (task.id === id ? { ...task, done: !task.done } : task))
     )
-    if (completingLastTask) {
-      setIsRunning(false)
-      setEndTime(null)
-      window.postMessage({ type: 'END_LOCK' }, '*')
-      setNotice('All tasks complete. You are finally free to leave.')
-    }
   }
 
   return (
@@ -292,6 +295,8 @@ function App() {
             ))}
             {tasks.length === 0 && <p className="empty-tasks">A clear page is a good place to start.</p>}
           </div>
+
+          <DoneFlow allDone={allTasksDone} onConfirmed={finishSession} />
 
           <form className="add-task-form" onSubmit={addTask}>
             <span aria-hidden="true">+</span>
