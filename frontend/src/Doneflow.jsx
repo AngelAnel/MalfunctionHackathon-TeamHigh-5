@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-/* ---------- TWEAK THESE TO CHANGE HOW EVIL IT IS ---------- */
+
 const MIN_ROUNDS = 5
 const MAX_ROUNDS = 7
-const COOLDOWN_SECONDS = 2 // Yes is locked this long every round
-const DODGES_PER_ROUND = 2 // times Yes runs away from the cursor each round
-const FINAL_PHRASE = 'i am done' // typed on the last round (case-insensitive)
-/* ---------------------------------------------------------- */
+const COOLDOWN_SECONDS = 2 
+const DODGES_PER_ROUND = 2
+const FINAL_PHRASE = 'i am done'
+
 
 const QUESTIONS = [
   'Are you sure you are done?',
@@ -29,7 +29,7 @@ const BTN_H = 38
 const rand = (n) => Math.floor(Math.random() * n)
 const randomRounds = () => MIN_ROUNDS + rand(MAX_ROUNDS - MIN_ROUNDS + 1)
 
-// Yes shrinks, No grows as rounds go on
+
 function widths(round) {
   return {
     yes: Math.max(56, 120 - round * 10),
@@ -63,7 +63,7 @@ function moveYes(layout, round) {
 }
 
 const styles = {
-    doneButton: {
+  doneButton: {
     flex: '0 0 auto',
     padding: '7px 14px',
     border: 'none',
@@ -244,11 +244,11 @@ export default function DoneFlow({ title, completed, onConfirmed }) {
 
   return (
     <>
-        {!completed && (
+      {!completed && (
         <button type="button" style={styles.doneButton} onClick={openConfirm}>
           Done?
         </button>
-        )}
+      )}
 
       {stage === 'confirm' &&
         createPortal(
@@ -299,18 +299,18 @@ export default function DoneFlow({ title, completed, onConfirmed }) {
           document.body
         )}
 
-        {stage === 'congrats' &&
+      {stage === 'congrats' &&
         createPortal(
-            <div style={styles.overlay} role="dialog" aria-modal="true">
+          <div style={styles.overlay} role="dialog" aria-modal="true">
             <div style={{ ...styles.modal, ...styles.congrats }}>
-                <h2>Congratulations!</h2>
-                <p>You finished: {title}</p>
-                <button type="button" style={styles.close} onClick={() => setStage('idle')}>
+              <h2>Congratulations!</h2>
+              <p>You finished: {title}</p>
+              <button type="button" style={styles.close} onClick={() => setStage('idle')}>
                 Close
-                </button>
+              </button>
             </div>
-            </div>,
-            document.body
+          </div>,
+          document.body
         )}
     </>
   )

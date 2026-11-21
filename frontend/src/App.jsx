@@ -64,10 +64,10 @@ function App() {
     )
 
     if (isRunning && endTime) {
-    startLock({ startTime: endTime - minutes * 60 * 1000, endTime })
+      startLock({ startTime: endTime - minutes * 60 * 1000, endTime })
     } else {
-    endLock()
-}
+      endLock()
+    }
   }, [tasks, minutes, isRunning, endTime, escapeAttempts])
 
   // Detect tab close attempt to increment escape counter & show native browser warning
@@ -133,6 +133,11 @@ function App() {
   }, [isRunning, endTime])
 
   function startTimer() {
+    if (minutes <= 0) {
+      setNotice('Set a session length first.')
+      return
+    }
+
     if (tasks.length === 0) {
       setNotice('Add at least one task before you start the timer.')
       return
@@ -195,6 +200,13 @@ function App() {
     )
     if (isLastTask) setSessionOpen(false)
     if (isLastTask && isRunning) finishSession()
+  }
+
+  // Runs when the Congratulations popup is closed: if everything is done, clear the list
+  function clearListIfAllDone() {
+    if (tasks.length > 0 && tasks.every((task) => task.done)) {
+      setTasks([])
+    }
   }
 
   return (
@@ -306,6 +318,7 @@ function App() {
                   title={task.title}
                   completed={task.done}
                   onConfirmed={() => completeTask(task.id)}
+                  onCongratsClosed={clearListIfAllDone}
                 />
                 <span className="task-index">0{index + 1}</span>
               </div>
