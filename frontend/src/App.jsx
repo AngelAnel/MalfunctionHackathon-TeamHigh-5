@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-<<<<<<< HEAD
 import { startLock, endLock } from './utils/extensionBridge.js'
 import ReminderModal from './components/ReminderModal.jsx'
-=======
 import DoneFlow from './Doneflow'
 import RandomAlarm from './RandomAlarm'
->>>>>>> 8fe8c253d8d55bc7c96bd5a9ff1da6c782658ad0
 
 const STORAGE_KEY = 'minute_reminder_state_v3'
 const startingTasks = []
@@ -131,7 +128,6 @@ function App() {
 
   
   function startTimer() {
-<<<<<<< HEAD
     if (allTasksDone) {
       setTasks((current) => current.map((task) => ({ ...task, done: false })))
     }
@@ -147,19 +143,14 @@ function App() {
     setNotice('')
     setIsRunning(true)
     window.postMessage({ type: 'START_LOCK' }, '*')
-=======
   if (tasks.length === 0) {
     setNotice('Add at least one task before you start the timer.')
     return
->>>>>>> 8fe8c253d8d55bc7c96bd5a9ff1da6c782658ad0
   }
 
   if (allTasksDone) {
     setTasks((current) => current.map((task) => ({ ...task, done: false })))
   }
-
-  const durationSeconds = minutes * 60
-  const targetEnd = Date.now() + durationSeconds * 1000
 
   setSecondsLeft(durationSeconds)
   setEndTime(targetEnd)
