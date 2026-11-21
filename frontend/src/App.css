@@ -496,15 +496,24 @@
 .add-task-form {
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-height: 46px;
-  margin-top: 10px;
-  border-bottom: 1px solid #dfe9e7;
+  gap: 12px;
+  min-height: 52px;
+  margin-top: 14px;
+  padding: 0 6px 0 14px;
+  border: 1.5px solid var(--teal);
+  border-radius: 3px;
+  background: #fff;
   color: var(--teal);
 }
 
+.add-task-form:focus-within {
+  box-shadow: 0 0 0 3px rgba(201, 31, 45, 0.15);
+}
+
 .add-task-form > span {
-  font-size: 21px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .add-task-form input {
@@ -514,24 +523,31 @@
   outline: 0;
   background: transparent;
   color: var(--ink);
-  font: 12px var(--sans);
+  font: 500 14px var(--sans);
 }
 
 .add-task-form input::placeholder {
-  color: #8d7b7d;
+  color: #6d5558;
+  opacity: 1;
 }
 
 .add-task-form button {
-  padding: 5px 0 5px 8px;
+  align-self: stretch;
+  margin: 6px 0;
+  padding: 0 18px;
   border: 0;
-  background: transparent;
-  color: var(--teal);
+  border-radius: 3px;
+  background: var(--teal);
+  color: #fff;
   cursor: pointer;
-  font: 600 11px var(--sans);
+  font: 700 11px var(--sans);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .add-task-form button:disabled {
-  color: #998588;
+  background: #e3c6c9;
+  color: #fff;
   cursor: not-allowed;
 }
 
@@ -645,4 +661,50 @@ input:focus-visible {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.tasks-panel .add-task-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 2px solid #c81e2b;
+}
+.tasks-panel .add-task-form:focus-within {
+  box-shadow: 0 0 0 3px rgba(200, 30, 43, 0.18);
+}
+.tasks-panel .add-task-form > span {
+  color: #c81e2b;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+.tasks-panel .add-task-form input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1a1112;
+  font-size: 16px;
+  font-weight: 500;
+}
+.tasks-panel .add-task-form input::placeholder {
+  color: #5c4a4c;
+  opacity: 1;
+}
+.tasks-panel .add-task-form button {
+  padding: 9px 20px;
+  border: none;
+  background: #c81e2b;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.tasks-panel .add-task-form button:disabled {
+  background: #d9b3b6;
+  cursor: not-allowed;
 }

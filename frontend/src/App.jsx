@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import DoneFlow from './Doneflow'
+import RandomAlarm from './RandomAlarm'
 
-const STORAGE_KEY = 'minute_reminder_state_v1'
+const STORAGE_KEY = 'minute_reminder_state_v3'
+const startingTasks = []
 
-const startingTasks = [
-  { id: 1, title: 'Choose one thing to focus on', done: false },
-  { id: 2, title: 'Clear your desk', done: false },
-]
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60)
@@ -27,15 +25,14 @@ function loadSavedState() {
 function App() {
   const saved = loadSavedState()
 
-  // Calculate remaining seconds if they closed the tab mid-session
   const initialRemaining =
     saved?.isRunning && saved?.endTime
       ? Math.max(0, Math.ceil((saved.endTime - Date.now()) / 1000))
-      : (saved?.minutes ?? 25) * 60
+      : (saved?.minutes ?? 0) * 60
 
   const [tasks, setTasks] = useState(saved?.tasks ?? startingTasks)
   const [taskInput, setTaskInput] = useState('')
-  const [minutes, setMinutes] = useState(saved?.minutes ?? 25)
+  const [minutes, setMinutes] = useState(saved?.minutes ?? 0)
   const [endTime, setEndTime] = useState(saved?.isRunning ? saved.endTime : null)
   const [secondsLeft, setSecondsLeft] = useState(initialRemaining)
   const [isRunning, setIsRunning] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
@@ -50,7 +47,6 @@ function App() {
   const allTasksDone = tasks.length > 0 && completedCount === tasks.length
   const progress = minutes > 0 ? secondsLeft / (minutes * 60) : 0
 
-  // Sync state to localStorage + tell extension if tab should be locked
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -64,7 +60,7 @@ function App() {
     }
   }, [tasks, minutes, isRunning, endTime, escapeAttempts])
 
-  // Detect tab close attempt to increment escape counter & show native browser warning
+
   useEffect(() => {
     if (!isRunning) return undefined
 
@@ -120,21 +116,28 @@ function App() {
     return () => window.clearInterval(intervalId)
   }, [isRunning, endTime, minutes])
 
+  
   function startTimer() {
-    if (allTasksDone) {
-      setTasks((current) => current.map((task) => ({ ...task, done: false })))
-    }
-
-    const durationSeconds = minutes * 60
-    const targetEnd = Date.now() + durationSeconds * 1000
-
-    setSecondsLeft(durationSeconds)
-    setEndTime(targetEnd)
-    setEscapeAttempts(0)
-    setNotice('')
-    setIsRunning(true)
-    window.postMessage({ type: 'START_LOCK' }, '*')
+  if (tasks.length === 0) {
+    setNotice('Add at least one task before you start the timer.')
+    return
   }
+
+  if (allTasksDone) {
+    setTasks((current) => current.map((task) => ({ ...task, done: false })))
+  }
+
+  const durationSeconds = minutes * 60
+  const targetEnd = Date.now() + durationSeconds * 1000
+
+  setSecondsLeft(durationSeconds)
+  setEndTime(targetEnd)
+  setEscapeAttempts(0)
+  setNotice('')
+  setIsRunning(true)
+  window.postMessage({ type: 'START_LOCK' }, '*')
+}
+
 
   function resetTimer() {
     setIsRunning(false)
@@ -160,10 +163,10 @@ function App() {
   }
 
   function updateMinutes(value) {
-    const nextMinutes = Math.min(180, Math.max(1, Number(value) || 1))
-    setMinutes(nextMinutes)
-    if (!isRunning) setSecondsLeft(nextMinutes * 60)
-  }
+  const nextMinutes = Math.min(180, Math.max(0, Number(value) || 0))
+  setMinutes(nextMinutes)
+  if (!isRunning) setSecondsLeft(nextMinutes * 60)
+  } 
 
   function addTask(event) {
     event.preventDefault()
@@ -182,6 +185,7 @@ function App() {
 
   return (
     <main className="workspace">
+      <RandomAlarm isRunning={isRunning} />
       <header className="topbar">
         <a className="wordmark" href="#home" aria-label="Morrow home">
           <span className="brand-mark" aria-hidden="true">m</span>
@@ -326,6 +330,8 @@ function App() {
         <span>TAKE IT ONE THING AT A TIME <span className="footer-spark">✳</span></span>
       </footer>
     </main>
+
+    
   )
 }
 
