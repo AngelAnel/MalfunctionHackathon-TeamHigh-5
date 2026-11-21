@@ -317,6 +317,11 @@
   transform: translateY(-1px);
 }
 
+.start-button:disabled {
+  background: #8daba4;
+  cursor: not-allowed;
+}
+
 .play-icon {
   font-size: 10px;
 }
@@ -359,6 +364,82 @@
   color: #8d6a60;
   cursor: pointer;
   font-size: 17px;
+}
+
+.reminder-dialog {
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e6c6c2;
+  border-radius: 5px;
+  background: #fffaf8;
+  color: #241719;
+  box-shadow: 0 24px 80px rgba(28, 12, 14, 0.32);
+}
+
+.reminder-dialog::backdrop {
+  background: rgba(36, 23, 25, 0.76);
+  backdrop-filter: blur(3px);
+}
+
+.reminder-dialog-content {
+  padding: 32px;
+}
+
+.reminder-dialog-kicker {
+  margin: 0 0 12px;
+  color: #be3d14;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
+.reminder-dialog h2 {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.reminder-dialog-message {
+  margin: 16px 0 24px;
+  color: #6d5558;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.reminder-dialog button {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 3px;
+  background: #c91f2d;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reminder-dialog button:hover {
+  background: #a71925;
+}
+
+.reminder-dialog button:focus-visible {
+  outline: 3px solid #be3d14;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .reminder-dialog-content {
+    padding: 26px 22px;
+  }
+
+  .reminder-dialog h2 {
+    font-size: 30px;
+  }
 }
 
 .timer-footnote {
