@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Minute-Reminder Watchdog",
+  "version": "1.0",
+  "permissions": ["tabs", "storage", "notifications"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:*/*", "http://127.0.0.1:*/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
