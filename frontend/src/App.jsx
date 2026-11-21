@@ -3,6 +3,7 @@ import './App.css'
 import { startLock, endLock } from './utils/extensionBridge.js'
 import ReminderModal from './components/ReminderModal.jsx'
 import DoneFlow from './Doneflow'
+import ResultScreen from './components/ResultScreen'
 import RandomAlarm from './RandomAlarm'
 
 const STORAGE_KEY = 'minute_reminder_state_v3'
@@ -33,13 +34,21 @@ function App() {
       ? Math.max(0, Math.ceil((saved.endTime - Date.now()) / 1000))
       : (saved?.minutes ?? 0) * 60
 
-  const [tasks, setTasks] = useState(saved?.tasks ?? startingTasks)
+  const initialTasks = saved?.tasks ?? startingTasks
+  const savedTasksAreDone = initialTasks.length > 0 && initialTasks.every((task) => task.done)
+  const [tasks, setTasks] = useState(initialTasks)
   const [taskInput, setTaskInput] = useState('')
   const [minutes, setMinutes] = useState(saved?.minutes ?? 0)
-  const [endTime, setEndTime] = useState(saved?.isRunning ? saved.endTime : null)
+  const [endTime, setEndTime] = useState(
+    saved?.isRunning && !savedTasksAreDone ? saved.endTime : null
+  )
   const [secondsLeft, setSecondsLeft] = useState(initialRemaining)
-  const [isRunning, setIsRunning] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
-  const [sessionOpen, setSessionOpen] = useState(Boolean(saved?.isRunning && initialRemaining > 0))
+  const [sessionOpen, setSessionOpen] = useState(
+    Boolean(saved?.isRunning && initialRemaining > 0 && !savedTasksAreDone)
+  )
+  const [isRunning, setIsRunning] = useState(
+    Boolean(saved?.isRunning && initialRemaining > 0 && !savedTasksAreDone)
+  )
   const [escapeAttempts, setEscapeAttempts] = useState(saved?.escapeAttempts ?? 0)
   const [reminderOpen, setReminderOpen] = useState(false)
   const [reminderMessage, setReminderMessage] = useState('')
@@ -64,13 +73,12 @@ function App() {
     )
 
     if (isRunning && endTime) {
-    startLock({ startTime: endTime - minutes * 60 * 1000, endTime })
+      startLock({ startTime: endTime - minutes * 60 * 1000, endTime })
     } else {
-    endLock()
-}
+      endLock()
+    }
   }, [tasks, minutes, isRunning, endTime, escapeAttempts])
 
-  // Detect tab close attempt to increment escape counter & show native browser warning
   useEffect(() => {
     if (!isRunning) return undefined
 
@@ -101,7 +109,6 @@ function App() {
         activeMinuteMsg = ''
         setIsRunning(false)
         setEndTime(null)
-        window.postMessage({ type: 'END_LOCK' }, '*')
         setNotice('Time is up. You failed to finish in time.')
         return
       }
@@ -153,7 +160,6 @@ function App() {
     setNotice('')
     setIsRunning(true)
     setSessionOpen(true)
-    window.postMessage({ type: 'START_LOCK' }, '*')
   }
 
   function resetTimer() {
@@ -161,16 +167,29 @@ function App() {
     setSessionOpen(false)
     setEndTime(null)
     setSecondsLeft(minutes * 60)
+    setReminderOpen(false)
+    setReminderMessage('')
     setNotice('')
-    window.postMessage({ type: 'END_LOCK' }, '*')
   }
 
-  // Called when the last task is completed during a running session
-  function finishSession() {
+  function endSession() {
     setIsRunning(false)
     setEndTime(null)
+    setNotice('Session ended early. Coward.')
+  }
+
+  function finishSession() {
+    setIsRunning(false)
+    setSessionOpen(false)
+    setEndTime(null)
+    setReminderOpen(false)
+    setReminderMessage('')
     setNotice('All tasks complete. You are finally free to leave.')
-    window.postMessage({ type: 'END_LOCK' }, '*')
+  }
+
+  function startAnotherRound() {
+    setTasks((current) => current.map((task) => ({ ...task, done: false })))
+    setNotice('')
   }
 
   function updateMinutes(value) {
@@ -346,6 +365,7 @@ function App() {
         message={reminderMessage}
         onAcknowledge={() => setReminderOpen(false)}
       />
+      {allTasksDone && <ResultScreen onClose={startAnotherRound} />}
     </main>
   )
 }
