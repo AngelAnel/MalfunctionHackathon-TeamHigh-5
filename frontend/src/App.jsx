@@ -133,6 +133,11 @@ function App() {
   }, [isRunning, endTime])
 
   function startTimer() {
+    if (tasks.length === 0) {
+      setNotice('Add at least one task before you start the timer.')
+      return
+    }
+
     if (allTasksDone) {
       setTasks((current) => current.map((task) => ({ ...task, done: false })))
     }
@@ -145,29 +150,6 @@ function App() {
     setEscapeAttempts(0)
     setReminderOpen(false)
     setReminderMessage('')
-    setNotice('')
-    setIsRunning(true)
-    window.postMessage({ type: 'START_LOCK' }, '*')
-  if (tasks.length === 0) {
-    setNotice('Add at least one task before you start the timer.')
-    return
-  }
-
-  if (allTasksDone) {
-    setTasks((current) => current.map((task) => ({ ...task, done: false })))
-  }
-
-  setSecondsLeft(durationSeconds)
-  setEndTime(targetEnd)
-  setEscapeAttempts(0)
-  setNotice('')
-  setIsRunning(true)
-  window.postMessage({ type: 'START_LOCK' }, '*')
-}
-
-    setSecondsLeft(durationSeconds)
-    setEndTime(targetEnd)
-    setEscapeAttempts(0)
     setNotice('')
     setIsRunning(true)
     setSessionOpen(true)
