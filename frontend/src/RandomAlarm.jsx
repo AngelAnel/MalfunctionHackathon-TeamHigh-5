@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 /* ---------- TWEAK THESE ---------- */
-const MIN_DELAY_SECONDS = 30 // earliest an alarm can ring after the last one
-const MAX_DELAY_SECONDS = 120 // latest
+const MIN_DELAY_SECONDS = 20 // earliest an alarm can ring after the last one
+const MAX_DELAY_SECONDS = 60 // latest
 const CORRECT_NEEDED = 2 // math answers in a row needed to stop it
 /* --------------------------------- */
 

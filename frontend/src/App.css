@@ -468,7 +468,8 @@
 }
 
 .task-title {
-  flex: 1;
+  flex: 0 1 auto;
+  min-width: 0;
   overflow-wrap: anywhere;
   color: #463236;
   font-size: 13px;
@@ -482,9 +483,14 @@
 }
 
 .task-index {
+  margin-left: auto;
   color: #998588;
   font-family: var(--display);
   font-size: 12px;
+}
+
+.task-row button {
+  white-space: nowrap;
 }
 
 .empty-tasks {
