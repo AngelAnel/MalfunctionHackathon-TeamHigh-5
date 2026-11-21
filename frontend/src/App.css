@@ -1,9 +1,9 @@
 .workspace {
-  --ink: #1d3136;
-  --muted: #74878a;
+  --ink: #241719;
+  --muted: #76585c;
   --line: #dce7e5;
-  --teal: #167668;
-  --coral: #c74132;
+  --teal: #c91f2d;
+  --coral: #be3d14;
   width: min(1120px, calc(100% - 64px));
   min-height: 100vh;
   margin: 0 auto;
@@ -97,14 +97,14 @@
 }
 
 .eyebrow span {
-  color: #a0aeac;
+  color: #8d7b7d;
   font-size: 9px;
   font-weight: 500;
 }
 
 .intro h1 {
   margin: 0;
-  color: #17272b;
+  color: #241719;
   font-family: var(--display);
   font-size: 64px;
   font-weight: 900;
@@ -122,7 +122,7 @@
 .intro-copy {
   max-width: 365px;
   margin: 15px 0 0;
-  color: #697d80;
+  color: #6d5558;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -224,7 +224,7 @@
 }
 
 .clock-caption {
-  color: #91a29f;
+  color: #8d777a;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.6px;
@@ -240,7 +240,7 @@
 }
 
 .clock-subtitle {
-  color: #8a9b98;
+  color: #80696d;
   font-size: 11px;
 }
 
@@ -252,7 +252,7 @@
 }
 
 .duration-control label {
-  color: #8a9b98;
+  color: #80696d;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -329,7 +329,7 @@
 .reset-button {
   width: 47px;
   background: #edf4f2;
-  color: #50736d;
+  color: #74494e;
   font-size: 23px;
 }
 
@@ -347,7 +347,7 @@
   padding: 9px 10px;
   border-left: 2px solid var(--coral);
   background: #fff5f1;
-  color: #775c54;
+  color: #6c3e36;
   font-size: 11px;
   text-align: left;
 }
@@ -363,7 +363,7 @@
 
 .timer-footnote {
   margin: 9px 0 0;
-  color: #9aa8a6;
+  color: #8d7b7d;
   font-size: 10px;
 }
 
@@ -470,26 +470,26 @@
 .task-title {
   flex: 1;
   overflow-wrap: anywhere;
-  color: #3a5053;
+  color: #463236;
   font-size: 13px;
   line-height: 1.45;
 }
 
 .task-row.is-done .task-title {
-  color: #9baaa7;
+  color: #8e7c7f;
   text-decoration: line-through;
-  text-decoration-color: #b5c5c1;
+  text-decoration-color: #c8b7b9;
 }
 
 .task-index {
-  color: #a8b7b3;
+  color: #998588;
   font-family: var(--display);
   font-size: 12px;
 }
 
 .empty-tasks {
   padding: 24px 0;
-  color: #91a29f;
+  color: #80696d;
   font-size: 13px;
 }
 
@@ -518,7 +518,7 @@
 }
 
 .add-task-form input::placeholder {
-  color: #9aa9a6;
+  color: #8d7b7d;
 }
 
 .add-task-form button {
@@ -531,7 +531,7 @@
 }
 
 .add-task-form button:disabled {
-  color: #b2c0bd;
+  color: #998588;
   cursor: not-allowed;
 }
 
@@ -541,7 +541,7 @@
   justify-content: space-between;
   gap: 12px;
   margin-top: 20px;
-  color: #96a5a2;
+  color: #8d7b7d;
   font-size: 10px;
 }
 
@@ -559,7 +559,7 @@
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--line);
-  color: #9aa9a6;
+  color: #8d7b7d;
   font-size: 9px;
   letter-spacing: 1.1px;
 }
