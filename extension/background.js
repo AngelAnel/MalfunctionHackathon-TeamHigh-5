@@ -34,7 +34,8 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       iconUrl: "icon.png",
       title: msg.title || "Minute-Reminder",
       message: msg.message,
-      priority: 2
+      priority: 2,
+      requireInteraction: true
     });
   }
 });

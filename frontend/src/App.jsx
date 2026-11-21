@@ -81,11 +81,14 @@ function App() {
   useEffect(() => {
     if (!isRunning || !endTime) return undefined
 
+    let activeMinuteMsg = ''
+
     const intervalId = window.setInterval(() => {
       const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
       setSecondsLeft(remaining)
 
       if (remaining <= 0) {
+        activeMinuteMsg = ''
         setIsRunning(false)
         setEndTime(null)
         window.postMessage({ type: 'END_LOCK' }, '*')
@@ -93,16 +96,20 @@ function App() {
         return
       }
 
+      // Start a new minute's message at each full-minute mark (except the initial start time)
       if (remaining % 60 === 0 && remaining !== minutes * 60) {
         const minsLeft = remaining / 60
-        const msg = `${minsLeft} minute${minsLeft === 1 ? '' : 's'} left. Stop stalling.`
-        setNotice(msg)
+        activeMinuteMsg = `${minsLeft} minute${minsLeft === 1 ? '' : 's'} left. Stop stalling.`
+        setNotice(activeMinuteMsg)
+      }
 
+      // Once a minute alert has started, repeat the same message every 10 seconds
+      if (activeMinuteMsg && remaining % 10 === 0) {
         window.postMessage(
           {
             type: 'SHOW_NOTIFICATION',
             title: 'Minute-Reminder',
-            message: msg,
+            message: activeMinuteMsg,
           },
           '*'
         )
